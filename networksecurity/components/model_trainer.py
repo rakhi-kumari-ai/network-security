@@ -6,6 +6,7 @@ from networksecurity.logging.logger import logging
 
 from networksecurity.entity.artifact_intity import DataTransformationArtifact,ModelTrainerArtifact
 from networksecurity.entity.config_entity import ModelTrainerConfig
+import mlflow
 
 from networksecurity.utils.ml_utils.models.estimator import NetworkModel
 from networksecurity.utils.main_utils.utils import save_object,load_object
@@ -32,6 +33,16 @@ class ModelTrainer:
             raise NetworkSecurityException(e,sys)
         
 
+    def track_mlflow(self,best_model,classification_metric):
+        with mlflow.start_run():
+            f1_score = classification_metric.f1_score
+            precsion_score = classification_metric.precision_score
+            recall_score = classification_metric.recall_score
+
+            mlflow.log_metric('f1_score',f1_score)
+            mlflow.log_metric('precsion_score',precsion_score)
+            mlflow.log_metric('recall_score',recall_score)
+            mlflow.sklearn.log_model(best_model,'model')
 
 
     def train_model(self,x_train,y_train,x_test,y_test):
@@ -89,9 +100,9 @@ class ModelTrainer:
 
 
             # ## Tracking with the ML-Flow
-            # self.track_mlflow(best_model,classification_train_metric)
+            self.track_mlflow(best_model,classification_train_metric)
 
-            # self.track_mlflow(best_model,classification_test_metric)
+            self.track_mlflow(best_model,classification_test_metric)
 
 
            
