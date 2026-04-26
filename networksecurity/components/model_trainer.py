@@ -24,6 +24,10 @@ from sklearn.ensemble import (
 )
 
 
+import dagshub
+dagshub.init(repo_owner='rakhi-kumari-ai', repo_name='network-security', mlflow=True)
+
+
 class ModelTrainer:
     def __init__(self,model_trainer_config:ModelTrainerConfig,data_transformation_artifact:DataTransformationArtifact):
         try:
@@ -96,10 +100,20 @@ class ModelTrainer:
             y_test_pred=best_model.predict(x_test)
 
 
-            classification_train_metric=get_classification_score(y_true=y_train,y_pred=y_train_pred)
+            # TRAIN METRIC
+            classification_train_metric = get_classification_score(
+            y_true=y_train,
+            y_pred=y_train_pred
+           )
 
+          # TEST METRIC (pehle define karo)
+            classification_test_metric = get_classification_score(
+            y_true=y_test,
+            y_pred=y_test_pred
+            )
 
-            # ## Tracking with the ML-Flow
+        
+            ## Tracking with the ML-Flow
             self.track_mlflow(best_model,classification_train_metric)
 
             self.track_mlflow(best_model,classification_test_metric)
@@ -116,8 +130,7 @@ class ModelTrainer:
 
 
             Network_Model=NetworkModel(preprocessor=preprocessor,model=best_model)
-            save_object(self.model_trainer_config.trained_model_file_path,obj=NetworkModel)
-             #model pusher
+            save_object(self.model_trainer_config.trained_model_file_path, obj=Network_Model)             #model pusher
             save_object("final_model/model.pkl",best_model)
         
 
@@ -132,6 +145,7 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e,sys)
 
+   
     def initiate_model_trainer(self)->ModelTrainerArtifact:
         try:
             train_file_path = self.data_transformation_artifact.transformed_train_file_path
@@ -149,32 +163,8 @@ class ModelTrainer:
             )
 
             model = self.train_model(x_train,y_train,x_test,y_test)
-
+            return model
+        
         except Exception as e:
             raise NetworkSecurityException(e,sys)
         
-
-
-
-       
-    
-    def initiate_model_trainer(self)->ModelTrainerArtifact:
-        try:
-            train_file_path = self.data_transformation_artifact.transformed_train_file_path
-            test_file_path = self.data_transformation_artifact.transformed_test_file_path
-
-            #loading training array and testing array
-            train_arr = load_numpy_array_data(train_file_path)
-            test_arr = load_numpy_array_data(test_file_path)
-
-            x_train, y_train, x_test, y_test = (
-                train_arr[:, :-1],
-                train_arr[:, -1],
-                test_arr[:, :-1],
-                test_arr[:, -1],
-            )
-
-            model = self.train_model(x_train,y_train,x_test,y_test)
-
-        except Exception as e:
-            raise NetworkSecurityException(e,sys)

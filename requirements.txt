@@ -8,4 +8,7 @@ scikit-learn
 pyyaml
 scipy
 mlflow
+dagshub
+fastapi
+unicorn
 # -e .
