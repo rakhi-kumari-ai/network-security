@@ -1,8 +1,8 @@
-num = int(input("enter number :"))
- 
-if num > 10: and num % 10 == 0:
-    print ("divisble :")
-else:
-    print("not divisble:")
+FROM python:3.10-slim
+WORKDIR /app
+COPY . /app
 
+RUN apt update -y && apt install awscli -y
 
+RUN apt-get update && pip install -r requirements.txt
+CMD ["python3", "app.py"]
